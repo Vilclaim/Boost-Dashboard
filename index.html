@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Silver Century Boost Dashboard</title>
+  <link rel="stylesheet" href="silver.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="topbar">
+    <div class="brand">
+      <!-- Replace src with your real logo -->
+      <img
+        src="lo2.jpeg"
+        alt="Silver Century Logo"
+        class="logo"
+      />
+      <div class="brand-text">
+        <h2>Silver Century</h2>
+        <span>Boost Analytics Dashboard</span>
+      </div>
+    </div>
+  </header>
+
+  <h1 class="main-title">🚀 Poster Boost Dashboard</h1>
+
+  <!-- FORM -->
+  <section class="form-box">
+    <h2>Add Ongoing Boost</h2>
+
+    <div class="form-grid">
+      <div class="field">
+        <label for="agent">Agent</label>
+        <select id="agent">
+          <option value="">Select Agent</option>
+          <option>Mary</option>
+          <option>Mazie</option>
+          <option>Kris</option>
+          <option>Rossel</option>
+          <option>Valerie</option>
+          <option>Zarah</option>
+          <option>Shiela</option>
+          <option>Anjelie</option>
+          <option>Joy</option>
+          <option>Sir Niil</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="product">Product</label>
+        <select id="product">
+          <option>A2A</option>
+          <option>B2B</option>
+          <option>TICKET</option>
+          <option>VISA</option>
+          <option>TOUR PACKAGE</option>
+          <option>OTHER</option>
+        </select>
+      </div>
+
+      <div class="field full">
+        <label for="adlink">Facebook Reel / Ad Link</label>
+        <input type="text" id="adlink" placeholder="Paste Facebook reel or ads link" />
+      </div>
+
+      <div class="field full">
+        <label for="image">Poster Image URL</label>
+        <input type="text" id="image" placeholder="Paste poster image URL" />
+      </div>
+
+      <div class="field">
+        <label for="views">Views</label>
+        <input type="number" id="views" placeholder="0" min="0" />
+      </div>
+
+      <div class="field">
+        <label for="clicks">Clicks</label>
+        <input type="number" id="clicks" placeholder="0" min="0" />
+      </div>
+
+      <div class="field">
+        <label for="inquiries">Inquiries</label>
+        <input type="number" id="inquiries" placeholder="0" min="0" />
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button class="primary-btn" onclick="addBoost()">Add Boost</button>
+      <button class="secondary-btn" onclick="clearAll()">Clear All</button>
+    </div>
+  </section>
+
+  <!-- EMPTY MESSAGE -->
+  <p id="emptyMsg" class="empty-message">No boost data yet — start adding your ongoing ads.</p>
+
+  <!-- CARDS -->
+  <section id="cardContainer" class="card-container"></section>
+
+  <!-- REPORT TABLE -->
+  <section class="table-section">
+    <h2>📊 Boost Report</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Agent</th>
+            <th>Product</th>
+            <th>Views</th>
+            <th>Clicks</th>
+            <th>Inquiries</th>
+            <th>Conversion</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="reportTable"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CHART -->
+  <section class="chart-section">
+    <h2>📈 Performance Chart</h2>
+    <div class="chart-box">
+      <canvas id="myChart"></canvas>
+    </div>
+  </section>
+
+  <script src="silver.js"></script>
+</body>
+</html>
