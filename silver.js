@@ -1,242 +1,495 @@
-let data = JSON.parse(localStorage.getItem("boostData")) || [];
-let chart = null;
-
-function save() {
-  localStorage.setItem("boostData", JSON.stringify(data));
+* {
+  box-sizing: border-box;
 }
 
-function getStatus(rate) {
-  if (rate >= 20) return { text: "🔥 Excellent", class: "excellent" };
-  if (rate >= 10) return { text: "✅ Good", class: "good" };
-  if (rate >= 5) return { text: "⚠️ Low", class: "low" };
-  return { text: "❌ Poor", class: "poor" };
+:root {
+  --bg: #0f172a;
+  --panel: #1e293b;
+  --panel-dark: #020617;
+  --line: #334155;
+  --text: #ffffff;
+  --muted: #94a3b8;
+  --primary: #38bdf8;
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --danger: #ef4444;
 }
 
-function getSafeNumber(id) {
-  const value = Number(document.getElementById(id).value);
-  return Number.isFinite(value) && value >= 0 ? value : 0;
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+  color: var(--text);
+  font-family: "Segoe UI", Arial, sans-serif;
+  padding: 20px;
 }
 
-function addBoost() {
-  const agent = document.getElementById("agent").value.trim();
-  const product = document.getElementById("product").value.trim();
-  const adlink = document.getElementById("adlink").value.trim();
-  const image = document.getElementById("image").value.trim();
-  const views = getSafeNumber("views");
-  const clicks = getSafeNumber("clicks");
-  const inquiries = getSafeNumber("inquiries");
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(30, 41, 59, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(10px);
+}
 
-  if (!agent) {
-    alert("Please select an agent.");
-    return;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary);
+  background: #fff;
+}
+
+.brand-text h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.brand-text span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.hero-title {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.hero-title h1 {
+  margin: 0 0 8px;
+  font-size: 32px;
+}
+
+.hero-title p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.section-head {
+  margin-bottom: 16px;
+}
+
+.section-head h2 {
+  margin: 0 0 6px;
+}
+
+.section-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.section-head.alt {
+  text-align: center;
+  margin-top: 26px;
+}
+
+.optional {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.form-box {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.field.full {
+  grid-column: 1 / -1;
+}
+
+label {
+  margin-bottom: 6px;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: #fff;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+input:focus,
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+button {
+  border: none;
+  border-radius: 10px;
+  padding: 11px 14px;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+.primary-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.secondary-btn {
+  background: linear-gradient(135deg, #64748b, #475569);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0 16px;
+}
+
+.summary-card {
+  background: rgba(30, 41, 59, 0.95);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.summary-label {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.summary-card strong {
+  font-size: 24px;
+}
+
+.empty-message {
+  text-align: center;
+  color: var(--muted);
+  margin: 18px 0 8px;
+}
+
+.card-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 20px;
+  margin-top: 14px;
+}
+
+.boost-card {
+  background: linear-gradient(135deg, #1e293b, #020617);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  transition: 0.25s ease;
+}
+
+.boost-card:hover {
+  transform: translateY(-5px);
+}
+
+.poster {
+  width: 100%;
+  height: 190px;
+  object-fit: cover;
+  display: block;
+  background: #0b1220;
+}
+
+.no-image {
+  height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #020617, #1e293b);
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+  padding: 16px;
+}
+
+.no-image h3 {
+  margin: 0 0 6px;
+  color: var(--primary);
+  font-size: 22px;
+}
+
+.no-image p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.info {
+  padding: 14px;
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--primary);
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.agent-name {
+  margin: 0;
+  font-size: 20px;
+}
+
+.small-text {
+  color: #cbd5e1;
+  font-size: 14px;
+  margin: 5px 0 0;
+}
+
+.boost-status {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.8);
+  white-space: nowrap;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 14px 0;
+}
+
+.stat-box {
+  background: var(--bg);
+  border: 1px solid #1f2b40;
+  border-radius: 12px;
+  text-align: center;
+  padding: 10px;
+}
+
+.stat-box span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.stat-box strong {
+  font-size: 15px;
+}
+
+.rate {
+  color: var(--primary);
+  font-weight: 700;
+  margin: 8px 0 4px;
+}
+
+.excellent {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.good {
+  color: #22c55e;
+  font-weight: 700;
+}
+
+.low {
+  color: #facc15;
+  font-weight: 700;
+}
+
+.poor {
+  color: #ef4444;
+  font-weight: 700;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.card-actions button {
+  flex: 1;
+}
+
+.view-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.edit-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.delete-btn {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+.table-section {
+  margin-top: 28px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 12px 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+
+th {
+  background: var(--panel-dark);
+  font-size: 14px;
+}
+
+td {
+  color: #e2e8f0;
+  font-size: 14px;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.table-actions button {
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.chart-section {
+  margin-top: 28px;
+}
+
+.chart-box {
+  width: 100%;
+  max-width: 760px;
+  height: 330px;
+  margin: 18px auto 0;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 1100px) {
+  .summary-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 980px) {
+  .form-grid {
+    grid-template-columns: 1fr 1fr;
   }
 
-  if (!image) {
-    alert("Please add the poster image URL.");
-    return;
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    padding: 14px;
   }
 
-  if (views <= 0) {
-    alert("Views must be greater than 0.");
-    return;
+  .form-grid,
+  .summary-grid,
+  .stats {
+    grid-template-columns: 1fr;
   }
 
-  const rate = (inquiries / views) * 100;
-  const status = getStatus(rate);
-
-  data.unshift({
-    id: Date.now(),
-    agent,
-    product,
-    adlink,
-    image,
-    views,
-    clicks,
-    inquiries,
-    rate: rate.toFixed(2),
-    status: status.text,
-    class: status.class
-  });
-
-  save();
-  render();
-  clearForm();
-}
-
-function clearForm() {
-  document.getElementById("agent").value = "";
-  document.getElementById("product").value = "A2A";
-  document.getElementById("adlink").value = "";
-  document.getElementById("image").value = "";
-  document.getElementById("views").value = "";
-  document.getElementById("clicks").value = "";
-  document.getElementById("inquiries").value = "";
-}
-
-function deleteBoost(index) {
-  const confirmed = confirm("Delete this boost entry?");
-  if (!confirmed) return;
-
-  data.splice(index, 1);
-  save();
-  render();
-}
-
-function clearAll() {
-  if (data.length === 0) {
-    alert("No data to clear.");
-    return;
+  .field.full {
+    grid-column: auto;
   }
 
-  const confirmed = confirm("Delete all boost data?");
-  if (!confirmed) return;
-
-  data = [];
-  save();
-  render();
-}
-
-function openAd(link) {
-  if (!link) {
-    alert("No ad link added for this post.");
-    return;
+  .form-actions,
+  .card-actions {
+    flex-direction: column;
   }
 
-  window.open(link, "_blank");
-}
-
-function render() {
-  const table = document.getElementById("reportTable");
-  const container = document.getElementById("cardContainer");
-  const emptyMsg = document.getElementById("emptyMsg");
-
-  table.innerHTML = "";
-  container.innerHTML = "";
-
-  if (data.length === 0) {
-    emptyMsg.style.display = "block";
-  } else {
-    emptyMsg.style.display = "none";
+  .hero-title h1 {
+    font-size: 25px;
   }
 
-  data.forEach((item, index) => {
-    table.innerHTML += `
-      <tr>
-        <td>${item.agent}</td>
-        <td>${item.product}</td>
-        <td>${item.views}</td>
-        <td>${item.clicks}</td>
-        <td>${item.inquiries}</td>
-        <td>${item.rate}%</td>
-        <td class="${item.class}">${item.status}</td>
-      </tr>
-    `;
-
-    container.innerHTML += `
-      <div class="boost-card">
-        <img src="${item.image}" alt="${item.product} poster" class="poster" />
-
-        <div class="info">
-          <div class="card-top">
-            <div>
-              <span class="badge">${item.product}</span>
-              <h3 class="agent-name">${item.agent}</h3>
-              <p class="small-text">Ongoing Boost Tracking</p>
-            </div>
-          </div>
-
-          <div class="stats">
-            <div class="stat-box">
-              <span>Views</span>
-              <strong>${item.views}</strong>
-            </div>
-            <div class="stat-box">
-              <span>Clicks</span>
-              <strong>${item.clicks}</strong>
-            </div>
-            <div class="stat-box">
-              <span>Inquiries</span>
-              <strong>${item.inquiries}</strong>
-            </div>
-          </div>
-
-          <p class="rate">📈 ${item.rate}% Conversion Rate</p>
-          <p class="${item.class}">${item.status}</p>
-
-          <div class="card-actions">
-            <button class="view-btn" onclick="openAd('${escapeSingleQuotes(item.adlink)}')">▶ View Ad</button>
-            <button class="delete-btn" onclick="deleteBoost(${index})">Delete</button>
-          </div>
-        </div>
-      </div>
-    `;
-  });
-
-  renderChart();
-}
-
-function escapeSingleQuotes(text) {
-  return String(text || "").replace(/'/g, "\\'");
-}
-
-function renderChart() {
-  const canvas = document.getElementById("myChart");
-  const ctx = canvas.getContext("2d");
-
-  if (chart) {
-    chart.destroy();
+  .brand-text h2 {
+    font-size: 18px;
   }
 
-  chart = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels: data.map(item => `${item.agent} - ${item.product}`),
-      datasets: [
-        {
-          label: "Views",
-          data: data.map(item => item.views),
-          backgroundColor: "rgba(59, 130, 246, 0.82)",
-          borderRadius: 6
-        },
-        {
-          label: "Inquiries",
-          data: data.map(item => item.inquiries),
-          backgroundColor: "rgba(34, 197, 94, 0.82)",
-          borderRadius: 6
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: {
-            color: "white"
-          }
-        }
-      },
-      scales: {
-        x: {
-          ticks: {
-            color: "white"
-          },
-          grid: {
-            color: "#334155"
-          }
-        },
-        y: {
-          beginAtZero: true,
-          ticks: {
-            color: "white"
-          },
-          grid: {
-            color: "#334155"
-          }
-        }
-      }
-    }
-  });
+  .chart-box {
+    height: 300px;
+  }
 }
-
-render();
