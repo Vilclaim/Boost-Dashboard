@@ -9,15 +9,9 @@
 </head>
 <body>
 
-  <!-- HEADER -->
   <header class="topbar">
     <div class="brand">
-      <!-- Replace src with your real logo -->
-      <img
-        src="lo2.jpeg"
-        alt="Silver Century Logo"
-        class="logo"
-      />
+      <img src="lo2.jpeg" alt="Silver Century Logo" class="logo" />
       <div class="brand-text">
         <h2>Silver Century</h2>
         <span>Boost Analytics Dashboard</span>
@@ -25,11 +19,16 @@
     </div>
   </header>
 
-  <h1 class="main-title">🚀 Poster Boost Dashboard</h1>
+  <section class="hero-title">
+    <h1>🚀  Boosting Dashboard</h1>
+    <p>Track ongoing boosted ads, posters, inquiries, and overall performance.</p>
+  </section>
 
-  <!-- FORM -->
   <section class="form-box">
-    <h2>Add Ongoing Boost</h2>
+    <div class="section-head">
+      <h2 id="formTitle">Add Ongoing Boost</h2>
+      <p>Save Facebook ads, reels, or campaign performance by agent.</p>
+    </div>
 
     <div class="form-grid">
       <div class="field">
@@ -61,14 +60,19 @@
         </select>
       </div>
 
-      <div class="field full">
-        <label for="adlink">Facebook Reel / Ad Link</label>
-        <input type="text" id="adlink" placeholder="Paste Facebook reel or ads link" />
+      <div class="field">
+        <label for="boostStatus">Boost Status</label>
+        <select id="boostStatus">
+          <option>ONGOING</option>
+          <option>ACTIVE</option>
+          <option>PAUSED</option>
+          <option>ENDED</option>
+        </select>
       </div>
 
-      <div class="field full">
-        <label for="image">Poster Image URL</label>
-        <input type="text" id="image" placeholder="Paste poster image URL" />
+      <div class="field">
+        <label for="startDate">Boost Start Date</label>
+        <input type="date" id="startDate" />
       </div>
 
       <div class="field">
@@ -81,38 +85,86 @@
         <input type="number" id="clicks" placeholder="0" min="0" />
       </div>
 
-      <div class="field">
+      <div class="field full">
+        <label for="adlink">Facebook Reel / Ad Link <span class="optional">(optional)</span></label>
+        <input type="text" id="adlink" placeholder="Paste Facebook reel or ad link here" />
+      </div>
+
+      <div class="field full">
+        <label for="image">Poster Image URL <span class="optional">(optional)</span></label>
+        <input type="text" id="image" placeholder="Paste poster image URL here" />
+      </div>
+
+      <div class="field full">
         <label for="inquiries">Inquiries</label>
         <input type="number" id="inquiries" placeholder="0" min="0" />
       </div>
     </div>
 
     <div class="form-actions">
-      <button class="primary-btn" onclick="addBoost()">Add Boost</button>
+      <button class="primary-btn" id="saveBtn" onclick="addOrUpdateBoost()">Add Boost</button>
+      <button class="secondary-btn" id="cancelEditBtn" onclick="cancelEdit()" style="display:none;">Cancel Edit</button>
       <button class="secondary-btn" onclick="clearAll()">Clear All</button>
     </div>
   </section>
 
-  <!-- EMPTY MESSAGE -->
+  <section class="summary-grid">
+    <div class="summary-card">
+      <span class="summary-label">Total Boosts</span>
+      <strong id="totalBoosts">0</strong>
+    </div>
+
+    <div class="summary-card">
+      <span class="summary-label">Total Views</span>
+      <strong id="totalViews">0</strong>
+    </div>
+
+    <div class="summary-card">
+      <span class="summary-label">Total Clicks</span>
+      <strong id="totalClicks">0</strong>
+    </div>
+
+    <div class="summary-card">
+      <span class="summary-label">Total Inquiries</span>
+      <strong id="totalInquiries">0</strong>
+    </div>
+
+    <div class="summary-card">
+      <span class="summary-label">Average Rate</span>
+      <strong id="avgRate">0.00%</strong>
+    </div>
+  </section>
+
   <p id="emptyMsg" class="empty-message">No boost data yet — start adding your ongoing ads.</p>
 
-  <!-- CARDS -->
-  <section id="cardContainer" class="card-container"></section>
+  <section>
+    <div class="section-head alt">
+      <h2>Boost Cards</h2>
+      <p>Visual view of each ongoing poster or ad campaign.</p>
+    </div>
+    <div id="cardContainer" class="card-container"></div>
+  </section>
 
-  <!-- REPORT TABLE -->
   <section class="table-section">
-    <h2>📊 Boost Report</h2>
+    <div class="section-head alt">
+      <h2>📊 Boost Report</h2>
+      <p>Performance table for all saved campaigns.</p>
+    </div>
+
     <div class="table-wrap">
       <table>
         <thead>
           <tr>
             <th>Agent</th>
             <th>Product</th>
+            <th>Status</th>
+            <th>Start Date</th>
             <th>Views</th>
             <th>Clicks</th>
             <th>Inquiries</th>
-            <th>Conversion</th>
-            <th>Status</th>
+            <th>Rate</th>
+            <th>Performance</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody id="reportTable"></tbody>
@@ -120,9 +172,12 @@
     </div>
   </section>
 
-  <!-- CHART -->
   <section class="chart-section">
-    <h2>📈 Performance Chart</h2>
+    <div class="section-head alt">
+      <h2>📈 Performance Chart</h2>
+      <p>Neutral medium chart size for clean dashboard view.</p>
+    </div>
+
     <div class="chart-box">
       <canvas id="myChart"></canvas>
     </div>
