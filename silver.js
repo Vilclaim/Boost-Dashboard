@@ -1,495 +1,346 @@
-* {
-  box-sizing: border-box;
-}
-
-:root {
-  --bg: #0f172a;
-  --panel: #1e293b;
-  --panel-dark: #020617;
-  --line: #334155;
-  --text: #ffffff;
-  --muted: #94a3b8;
-  --primary: #38bdf8;
-  --success: #22c55e;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-}
-
-body {
-  margin: 0;
-  background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
-  color: var(--text);
-  font-family: "Segoe UI", Arial, sans-serif;
-  padding: 20px;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(30, 41, 59, 0.92);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 14px 18px;
-  margin-bottom: 20px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(10px);
-}
-
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.logo {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--primary);
-  background: #fff;
-}
-
-.brand-text h2 {
-  margin: 0;
-  font-size: 21px;
-}
-
-.brand-text span {
-  display: block;
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.hero-title {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.hero-title h1 {
-  margin: 0 0 8px;
-  font-size: 32px;
-}
-
-.hero-title p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 15px;
-}
-
-.section-head {
-  margin-bottom: 16px;
-}
-
-.section-head h2 {
-  margin: 0 0 6px;
-}
-
-.section-head p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.section-head.alt {
-  text-align: center;
-  margin-top: 26px;
-}
-
-.optional {
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.form-box {
-  background: rgba(30, 41, 59, 0.95);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 20px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-}
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-}
-
-.field.full {
-  grid-column: 1 / -1;
-}
-
-label {
-  margin-bottom: 6px;
-  color: #cbd5e1;
-  font-size: 14px;
-}
-
-input,
-select {
-  width: 100%;
-  padding: 11px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: #fff;
-  outline: none;
-  transition: 0.2s ease;
-}
-
-input:focus,
-select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
-}
-
-.form-actions {
-  display: flex;
-  gap: 12px;
-  margin-top: 18px;
-}
-
-button {
-  border: none;
-  border-radius: 10px;
-  padding: 11px 14px;
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-button:hover {
-  transform: translateY(-1px);
-}
-
-.primary-btn {
-  flex: 1;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
-}
-
-.secondary-btn {
-  background: linear-gradient(135deg, #64748b, #475569);
-}
-
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
-  margin: 22px 0 16px;
-}
-
-.summary-card {
-  background: rgba(30, 41, 59, 0.95);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
-  text-align: center;
-}
-
-.summary-label {
-  display: block;
-  color: var(--muted);
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-
-.summary-card strong {
-  font-size: 24px;
-}
+let data = JSON.parse(localStorage.getItem("boostData")) || [];
+let chart = null;
+let editIndex = -1;
+
+function save() {
+  localStorage.setItem("boostData", JSON.stringify(data));
+}
+
+function getSafeNumber(id) {
+  const rawValue = document.getElementById(id).value.trim();
+  const parsed = Number(rawValue);
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0;
+}
+
+function formatNumber(num) {
+  const value = Number(num) || 0;
 
-.empty-message {
-  text-align: center;
-  color: var(--muted);
-  margin: 18px 0 8px;
-}
-
-.card-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 20px;
-  margin-top: 14px;
-}
-
-.boost-card {
-  background: linear-gradient(135deg, #1e293b, #020617);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  overflow: hidden;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
-  transition: 0.25s ease;
-}
-
-.boost-card:hover {
-  transform: translateY(-5px);
-}
-
-.poster {
-  width: 100%;
-  height: 190px;
-  object-fit: cover;
-  display: block;
-  background: #0b1220;
-}
-
-.no-image {
-  height: 190px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #020617, #1e293b);
-  border-bottom: 1px solid var(--line);
-  text-align: center;
-  padding: 16px;
-}
-
-.no-image h3 {
-  margin: 0 0 6px;
-  color: var(--primary);
-  font-size: 22px;
-}
-
-.no-image p {
-  margin: 0;
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.info {
-  padding: 14px;
-}
-
-.card-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.badge {
-  display: inline-block;
-  padding: 5px 10px;
-  border-radius: 999px;
-  background: var(--primary);
-  color: #0f172a;
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-.agent-name {
-  margin: 0;
-  font-size: 20px;
-}
-
-.small-text {
-  color: #cbd5e1;
-  font-size: 14px;
-  margin: 5px 0 0;
-}
-
-.boost-status {
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 10px;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  color: #e2e8f0;
-  background: rgba(15, 23, 42, 0.8);
-  white-space: nowrap;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin: 14px 0;
-}
-
-.stat-box {
-  background: var(--bg);
-  border: 1px solid #1f2b40;
-  border-radius: 12px;
-  text-align: center;
-  padding: 10px;
-}
+  if (value >= 1000000) {
+    return (value / 1000000).toFixed(1).replace(".0", "") + "M";
+  }
+
+  if (value >= 1000) {
+    return (value / 1000).toFixed(1).replace(".0", "") + "K";
+  }
 
-.stat-box span {
-  display: block;
-  color: var(--muted);
-  font-size: 12px;
-  margin-bottom: 4px;
-}
-
-.stat-box strong {
-  font-size: 15px;
-}
-
-.rate {
-  color: var(--primary);
-  font-weight: 700;
-  margin: 8px 0 4px;
-}
-
-.excellent {
-  color: #4ade80;
-  font-weight: 700;
-}
-
-.good {
-  color: #22c55e;
-  font-weight: 700;
-}
-
-.low {
-  color: #facc15;
-  font-weight: 700;
-}
-
-.poor {
-  color: #ef4444;
-  font-weight: 700;
-}
-
-.card-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.card-actions button {
-  flex: 1;
-}
-
-.view-btn {
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-}
-
-.edit-btn {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-}
-
-.delete-btn {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-}
-
-.table-section {
-  margin-top: 28px;
-}
-
-.table-wrap {
-  overflow-x: auto;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
+  return value.toString();
+}
+
+function getStatus(rate) {
+  if (rate >= 20) return { text: "🔥 Excellent", class: "excellent" };
+  if (rate >= 10) return { text: "✅ Good", class: "good" };
+  if (rate >= 5) return { text: "⚠️ Low", class: "low" };
+  return { text: "❌ Poor", class: "poor" };
+}
+
+function escapeSingleQuotes(text) {
+  return String(text || "").replace(/'/g, "\\'");
+}
+
+function addOrUpdateBoost() {
+  const agent = document.getElementById("agent").value.trim();
+  const product = document.getElementById("product").value.trim();
+  const boostStatus = document.getElementById("boostStatus").value.trim();
+  const startDate = document.getElementById("startDate").value.trim();
+  const adlink = document.getElementById("adlink").value.trim();
+  const image = document.getElementById("image").value.trim();
+  const views = getSafeNumber("views");
+  const clicks = getSafeNumber("clicks");
+  const inquiries = getSafeNumber("inquiries");
+
+  if (!agent) {
+    alert("Please select an agent.");
+    return;
+  }
+
+  if (views <= 0) {
+    alert("Views must be greater than 0.");
+    return;
+  }
+
+  const rate = (inquiries / views) * 100;
+  const performance = getStatus(rate);
+
+  const itemData = {
+    id: editIndex === -1 ? Date.now() : data[editIndex].id,
+    agent,
+    product,
+    boostStatus,
+    startDate,
+    adlink,
+    image,
+    views,
+    clicks,
+    inquiries,
+    rate: rate.toFixed(2),
+    status: performance.text,
+    class: performance.class
+  };
+
+  if (editIndex === -1) {
+    data.unshift(itemData);
+  } else {
+    data[editIndex] = itemData;
+  }
+
+  save();
+  render();
+  resetFormState();
+}
+
+function editBoost(index) {
+  const item = data[index];
+
+  document.getElementById("agent").value = item.agent;
+  document.getElementById("product").value = item.product;
+  document.getElementById("boostStatus").value = item.boostStatus;
+  document.getElementById("startDate").value = item.startDate || "";
+  document.getElementById("adlink").value = item.adlink || "";
+  document.getElementById("image").value = item.image || "";
+  document.getElementById("views").value = item.views;
+  document.getElementById("clicks").value = item.clicks;
+  document.getElementById("inquiries").value = item.inquiries;
 
-th,
-td {
-  padding: 12px 10px;
-  text-align: center;
-  border-bottom: 1px solid var(--line);
-}
+  editIndex = index;
+  document.getElementById("saveBtn").textContent = "Update Boost";
+  document.getElementById("formTitle").textContent = "Update Ongoing Boost";
+  document.getElementById("cancelEditBtn").style.display = "inline-block";
 
-th {
-  background: var(--panel-dark);
-  font-size: 14px;
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
-td {
-  color: #e2e8f0;
-  font-size: 14px;
+function cancelEdit() {
+  resetFormState();
 }
 
-.table-actions {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
+function resetFormState() {
+  editIndex = -1;
+  clearForm();
+  document.getElementById("saveBtn").textContent = "Add Boost";
+  document.getElementById("formTitle").textContent = "Add Ongoing Boost";
+  document.getElementById("cancelEditBtn").style.display = "none";
 }
 
-.table-actions button {
-  padding: 8px 10px;
-  font-size: 12px;
+function clearForm() {
+  document.getElementById("agent").value = "";
+  document.getElementById("product").value = "A2A";
+  document.getElementById("boostStatus").value = "ONGOING";
+  document.getElementById("startDate").value = "";
+  document.getElementById("adlink").value = "";
+  document.getElementById("image").value = "";
+  document.getElementById("views").value = "";
+  document.getElementById("clicks").value = "";
+  document.getElementById("inquiries").value = "";
 }
 
-.chart-section {
-  margin-top: 28px;
-}
+function deleteBoost(index) {
+  const confirmed = confirm("Delete this boost entry?");
+  if (!confirmed) return;
 
-.chart-box {
-  width: 100%;
-  max-width: 760px;
-  height: 330px;
-  margin: 18px auto 0;
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  padding: 16px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-}
+  data.splice(index, 1);
+  save();
+  render();
 
-@media (max-width: 1100px) {
-  .summary-grid {
-    grid-template-columns: repeat(3, 1fr);
+  if (editIndex === index) {
+    resetFormState();
+  } else if (editIndex > index) {
+    editIndex--;
   }
 }
 
-@media (max-width: 980px) {
-  .form-grid {
-    grid-template-columns: 1fr 1fr;
+function clearAll() {
+  if (data.length === 0) {
+    alert("No data to clear.");
+    return;
   }
 
-  .summary-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+  const confirmed = confirm("Delete all boost data?");
+  if (!confirmed) return;
+
+  data = [];
+  save();
+  render();
+  resetFormState();
 }
 
-@media (max-width: 640px) {
-  body {
-    padding: 14px;
+function openAd(link) {
+  if (!link) {
+    alert("No ad link added for this post.");
+    return;
   }
 
-  .form-grid,
-  .summary-grid,
-  .stats {
-    grid-template-columns: 1fr;
-  }
-
-  .field.full {
-    grid-column: auto;
-  }
-
-  .form-actions,
-  .card-actions {
-    flex-direction: column;
-  }
-
-  .hero-title h1 {
-    font-size: 25px;
-  }
-
-  .brand-text h2 {
-    font-size: 18px;
-  }
-
-  .chart-box {
-    height: 300px;
-  }
+  window.open(link, "_blank");
 }
+
+function updateSummary() {
+  const totalBoostsEl = document.getElementById("totalBoosts");
+  const totalViewsEl = document.getElementById("totalViews");
+  const totalClicksEl = document.getElementById("totalClicks");
+  const totalInquiriesEl = document.getElementById("totalInquiries");
+  const avgRateEl = document.getElementById("avgRate");
+
+  const totalBoosts = data.length;
+  const totalViews = data.reduce((sum, item) => sum + Number(item.views || 0), 0);
+  const totalClicks = data.reduce((sum, item) => sum + Number(item.clicks || 0), 0);
+  const totalInquiries = data.reduce((sum, item) => sum + Number(item.inquiries || 0), 0);
+  const avgRate =
+    totalBoosts > 0
+      ? data.reduce((sum, item) => sum + Number(item.rate || 0), 0) / totalBoosts
+      : 0;
+
+  totalBoostsEl.textContent = totalBoosts;
+  totalViewsEl.textContent = formatNumber(totalViews);
+  totalClicksEl.textContent = formatNumber(totalClicks);
+  totalInquiriesEl.textContent = formatNumber(totalInquiries);
+  avgRateEl.textContent = `${avgRate.toFixed(2)}%`;
+}
+
+function render() {
+  const table = document.getElementById("reportTable");
+  const container = document.getElementById("cardContainer");
+  const emptyMsg = document.getElementById("emptyMsg");
+
+  table.innerHTML = "";
+  container.innerHTML = "";
+
+  emptyMsg.style.display = data.length === 0 ? "block" : "none";
+
+  data.forEach((item, index) => {
+    table.innerHTML += `
+      <tr>
+        <td>${item.agent}</td>
+        <td>${item.product}</td>
+        <td>${item.boostStatus}</td>
+        <td>${item.startDate || "-"}</td>
+        <td>${formatNumber(item.views)}</td>
+        <td>${formatNumber(item.clicks)}</td>
+        <td>${formatNumber(item.inquiries)}</td>
+        <td>${item.rate}%</td>
+        <td class="${item.class}">${item.status}</td>
+        <td>
+          <div class="action-cell">
+            <button class="action-btn-small edit-btn" onclick="editBoost(${index})">Edit</button>
+            <button class="action-btn-small view-btn" onclick="openAd('${escapeSingleQuotes(item.adlink)}')">View</button>
+            <button class="action-btn-small delete-btn" onclick="deleteBoost(${index})">Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+
+    container.innerHTML += `
+      <div class="boost-card">
+        ${
+          item.image
+            ? `<img src="${item.image}" alt="${item.product} poster" class="poster" />`
+            : `
+              <div class="no-image">
+                <h3>${item.product}</h3>
+                <p>Ongoing Boost</p>
+              </div>
+            `
+        }
+
+        <div class="info">
+          <div class="card-top">
+            <div>
+              <span class="badge">${item.product}</span>
+              <h3 class="agent-name">${item.agent}</h3>
+              <p class="small-text">Saved campaign performance</p>
+              <p class="small-text">📅 Start Date: ${item.startDate || "Not set"}</p>
+            </div>
+            <span class="boost-status">${item.boostStatus}</span>
+          </div>
+
+          <div class="stats">
+            <div class="stat-box">
+              <span>Views</span>
+              <strong>${formatNumber(item.views)}</strong>
+            </div>
+            <div class="stat-box">
+              <span>Clicks</span>
+              <strong>${formatNumber(item.clicks)}</strong>
+            </div>
+            <div class="stat-box">
+              <span>Inquiries</span>
+              <strong>${formatNumber(item.inquiries)}</strong>
+            </div>
+          </div>
+
+          <p class="rate">📈 ${item.rate}% Conversion Rate</p>
+          <p class="${item.class}">${item.status}</p>
+
+          <div class="card-actions">
+            <button class="edit-btn" onclick="editBoost(${index})">Edit</button>
+            <button class="view-btn" onclick="openAd('${escapeSingleQuotes(item.adlink)}')">▶ View Ad</button>
+            <button class="delete-btn" onclick="deleteBoost(${index})">Delete</button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  updateSummary();
+  renderChart();
+}
+
+function renderChart() {
+  const canvas = document.getElementById("myChart");
+  const ctx = canvas.getContext("2d");
+
+  if (chart) {
+    chart.destroy();
+  }
+
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: data.map(item => `${item.agent} - ${item.product}`),
+      datasets: [
+        {
+          label: "Views",
+          data: data.map(item => item.views),
+          backgroundColor: "rgba(59, 130, 246, 0.82)",
+          borderRadius: 6
+        },
+        {
+          label: "Inquiries",
+          data: data.map(item => item.inquiries),
+          backgroundColor: "rgba(34, 197, 94, 0.82)",
+          borderRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          labels: {
+            color: "white"
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "white"
+          },
+          grid: {
+            color: "#334155"
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "white"
+          },
+          grid: {
+            color: "#334155"
+          }
+        }
+      }
+    }
+  });
+}
+
+render();
