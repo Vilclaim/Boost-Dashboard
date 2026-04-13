@@ -1,6 +1,7 @@
 let data = JSON.parse(localStorage.getItem("boostData")) || [];
 let chart = null;
 let editIndex = -1;
+let miniCharts = {};
 
 function save() {
   localStorage.setItem("boostData", JSON.stringify(data));
@@ -58,7 +59,11 @@ function addOrUpdateBoost() {
     return;
   }
 
-  const rate = (inquiries / views) * 100;
+  let rate = 0;
+  if (views > 0) {
+    rate = (inquiries / views) * 100;
+  }
+
   const performance = getStatus(rate);
 
   const itemData = {
@@ -72,7 +77,7 @@ function addOrUpdateBoost() {
     views,
     clicks,
     inquiries,
-    rate: rate.toFixed(2),
+    rate: Number.isFinite(rate) ? rate.toFixed(2) : "0.00",
     status: performance.text,
     class: performance.class
   };
@@ -137,6 +142,12 @@ function deleteBoost(index) {
   const confirmed = confirm("Delete this boost entry?");
   if (!confirmed) return;
 
+  const chartKey = String(data[index]?.id ?? index);
+  if (miniCharts[chartKey]) {
+    miniCharts[chartKey].destroy();
+    delete miniCharts[chartKey];
+  }
+
   data.splice(index, 1);
   save();
   render();
@@ -156,6 +167,11 @@ function clearAll() {
 
   const confirmed = confirm("Delete all boost data?");
   if (!confirmed) return;
+
+  Object.values(miniCharts).forEach(instance => {
+    if (instance) instance.destroy();
+  });
+  miniCharts = {};
 
   data = [];
   save();
@@ -206,6 +222,10 @@ function render() {
   emptyMsg.style.display = data.length === 0 ? "block" : "none";
 
   data.forEach((item, index) => {
+    const safeRate = Number(item.rate || 0).toFixed(2);
+    const chartId = `chart-${item.id}`;
+    const flipId = `flip-${item.id}`;
+
     table.innerHTML += `
       <tr>
         <td>${item.agent}</td>
@@ -215,7 +235,7 @@ function render() {
         <td>${formatNumber(item.views)}</td>
         <td>${formatNumber(item.clicks)}</td>
         <td>${formatNumber(item.inquiries)}</td>
-        <td>${item.rate}%</td>
+        <td>${safeRate}%</td>
         <td class="${item.class}">${item.status}</td>
         <td>
           <div class="action-cell">
@@ -229,50 +249,72 @@ function render() {
 
     container.innerHTML += `
       <div class="boost-card">
-        ${
-          item.image
-            ? `<img src="${item.image}" alt="${item.product} poster" class="poster" />`
-            : `
-              <div class="no-image">
-                <h3>${item.product}</h3>
-                <p>Ongoing Boost</p>
+        <div class="card-flip" id="${flipId}">
+          <div class="card-front">
+            ${
+              item.image
+                ? `<img src="${item.image}" alt="${item.product} poster" class="poster" />`
+                : `
+                  <div class="no-image">
+                    <h3>${item.product}</h3>
+                    <p>Ongoing Boost</p>
+                  </div>
+                `
+            }
+
+            <div class="info">
+              <div class="card-top">
+                <div>
+                  <span class="badge">${item.product}</span>
+                  <h3 class="agent-name">${item.agent}</h3>
+                  <p class="small-text">Saved campaign performance</p>
+                  <p class="small-text">📅 Start Date: ${item.startDate || "Not set"}</p>
+                </div>
+                <span class="boost-status">${item.boostStatus}</span>
               </div>
-            `
-        }
 
-        <div class="info">
-          <div class="card-top">
-            <div>
-              <span class="badge">${item.product}</span>
-              <h3 class="agent-name">${item.agent}</h3>
-              <p class="small-text">Saved campaign performance</p>
-              <p class="small-text">📅 Start Date: ${item.startDate || "Not set"}</p>
+              <div class="stats">
+                <div class="stat-box">
+                  <span>Views</span>
+                  <strong>${formatNumber(item.views)}</strong>
+                </div>
+                <div class="stat-box">
+                  <span>Clicks</span>
+                  <strong>${formatNumber(item.clicks)}</strong>
+                </div>
+                <div class="stat-box">
+                  <span>Inquiries</span>
+                  <strong>${formatNumber(item.inquiries)}</strong>
+                </div>
+              </div>
+
+              <p class="rate">📈 ${safeRate}% Conversion Rate</p>
+              <p class="${item.class}">${item.status}</p>
+
+              <div class="card-actions">
+                <button class="edit-btn" onclick="editBoost(${index})">Edit</button>
+                <button class="view-btn" onclick="openAd('${escapeSingleQuotes(item.adlink)}')">▶ View Ad</button>
+                <button class="view-chart-btn" onclick="flipCard(${index})">📊 View Chart</button>
+                <button class="delete-btn" onclick="deleteBoost(${index})">Delete</button>
+              </div>
             </div>
-            <span class="boost-status">${item.boostStatus}</span>
           </div>
 
-          <div class="stats">
-            <div class="stat-box">
-              <span>Views</span>
-              <strong>${formatNumber(item.views)}</strong>
+          <div class="card-back">
+            <div class="chart-card-header">
+              <h3>Performance Chart</h3>
+              <p>${item.agent} • ${item.product}</p>
             </div>
-            <div class="stat-box">
-              <span>Clicks</span>
-              <strong>${formatNumber(item.clicks)}</strong>
-            </div>
-            <div class="stat-box">
-              <span>Inquiries</span>
-              <strong>${formatNumber(item.inquiries)}</strong>
-            </div>
-          </div>
 
-          <p class="rate">📈 ${item.rate}% Conversion Rate</p>
-          <p class="${item.class}">${item.status}</p>
+            <div class="chart-mini-wrap">
+              <div class="chart-mini-box">
+                <canvas id="${chartId}"></canvas>
+              </div>
+            </div>
 
-          <div class="card-actions">
-            <button class="edit-btn" onclick="editBoost(${index})">Edit</button>
-            <button class="view-btn" onclick="openAd('${escapeSingleQuotes(item.adlink)}')">▶ View Ad</button>
-            <button class="delete-btn" onclick="deleteBoost(${index})">Delete</button>
+            <div class="chart-card-footer">
+              <button class="secondary-btn chart-back-btn" onclick="flipCard(${index})">⬅ Back to Card</button>
+            </div>
           </div>
         </div>
       </div>
@@ -281,6 +323,140 @@ function render() {
 
   updateSummary();
   renderChart();
+}
+
+function flipCard(index) {
+  const item = data[index];
+  if (!item) return;
+
+  const flipEl = document.getElementById(`flip-${item.id}`);
+  if (!flipEl) return;
+
+  flipEl.classList.toggle("active");
+
+  if (flipEl.classList.contains("active")) {
+    setTimeout(() => renderMiniChart(index), 320);
+  }
+}
+
+function getTrendData(item) {
+  const views = Number(item.views || 0);
+  const clicks = Number(item.clicks || 0);
+  const inquiries = Number(item.inquiries || 0);
+
+  const p1 = Math.max(0, Math.round(views * 0.18));
+  const p2 = Math.max(p1, Math.round(views * 0.34));
+  const p3 = Math.max(p2, Math.round(views * 0.56));
+  const p4 = Math.max(p3, Math.round(views * 0.78));
+  const p5 = views;
+
+  const q1 = Math.max(0, Math.round(inquiries * 0.12));
+  const q2 = Math.max(q1, Math.round(inquiries * 0.3));
+  const q3 = Math.max(q2, Math.round(inquiries * 0.52));
+  const q4 = Math.max(q3, Math.round(inquiries * 0.76));
+  const q5 = inquiries;
+
+  const c1 = Math.max(0, Math.round(clicks * 0.15));
+  const c2 = Math.max(c1, Math.round(clicks * 0.32));
+  const c3 = Math.max(c2, Math.round(clicks * 0.55));
+  const c4 = Math.max(c3, Math.round(clicks * 0.79));
+  const c5 = clicks;
+
+  return {
+    labels: ["Start", "Day 2", "Day 3", "Day 4", "Now"],
+    views: [p1, p2, p3, p4, p5],
+    inquiries: [q1, q2, q3, q4, q5],
+    clicks: [c1, c2, c3, c4, c5]
+  };
+}
+
+function renderMiniChart(index) {
+  const item = data[index];
+  if (!item) return;
+
+  const chartKey = String(item.id);
+  const canvas = document.getElementById(`chart-${item.id}`);
+  if (!canvas) return;
+
+  if (miniCharts[chartKey]) {
+    miniCharts[chartKey].destroy();
+  }
+
+  const trend = getTrendData(item);
+  const ctx = canvas.getContext("2d");
+
+  miniCharts[chartKey] = new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: trend.labels,
+      datasets: [
+        {
+          label: "Views",
+          data: trend.views,
+          borderColor: "#38bdf8",
+          backgroundColor: "rgba(56, 189, 248, 0.12)",
+          fill: true,
+          tension: 0.35,
+          borderWidth: 2,
+          pointRadius: 3
+        },
+        {
+          label: "Clicks",
+          data: trend.clicks,
+          borderColor: "#f59e0b",
+          backgroundColor: "rgba(245, 158, 11, 0.10)",
+          fill: false,
+          tension: 0.35,
+          borderWidth: 2,
+          pointRadius: 3
+        },
+        {
+          label: "Inquiries",
+          data: trend.inquiries,
+          borderColor: "#22c55e",
+          backgroundColor: "rgba(34, 197, 94, 0.10)",
+          fill: false,
+          tension: 0.35,
+          borderWidth: 2,
+          pointRadius: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: "#ffffff"
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#ffffff"
+          },
+          grid: {
+            color: "#334155"
+          }
+        },
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: "#ffffff"
+          },
+          grid: {
+            color: "#334155"
+          }
+        }
+      }
+    }
+  });
 }
 
 function renderChart() {
