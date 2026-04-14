@@ -52,10 +52,9 @@ function addOrUpdateBoost() {
   if (!agent) {
     alert("Please select an agent.");
     return;
-  }
+  
 
-  if (views <= 0) {
-    alert("Views must be greater than 0.");
+ 
     return;
   }
 
